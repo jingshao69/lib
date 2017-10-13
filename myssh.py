@@ -26,11 +26,18 @@ def initSSHPass():
    else:
       print "%s not found!" %(SSH_CONFIG_FILE)
 
-def execSSHCommand(ip_addr, cmd):
+def setSSHPass(user, password):
+  global my_user
+  global my_password
+  my_user = user
+  my_password = password
+
+def execSSHCommand(ip_addr, cmd, **kwargs):
+  my_port = int(kwargs.get('port','22'))
   try:
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(ip_addr, username=my_user, password=my_password)
+    ssh.connect(ip_addr, port=my_port, username=my_user, password=my_password)
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(cmd)
     data = ssh_stdout.read().splitlines()
     for line in data:
@@ -38,11 +45,14 @@ def execSSHCommand(ip_addr, cmd):
   finally:
     ssh.close()
 
-def createSCPClient(server):
+def createSCPClient(server, **kwargs):
+  my_port = int(kwargs.get('port','22'))
+  #print "%s %s port %d" %(my_user, my_password, my_port)
+
   client = paramiko.SSHClient()
   #client.load_system_host_keys()
   client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-  client.connect(server, username=my_user, password=my_password)
+  client.connect(server, port=my_port, username=my_user, password=my_password)
   scp = SCPClient(client.get_transport())
   return scp
 
